@@ -11,6 +11,7 @@ import IndustriesIndex from "./pages/IndustriesIndex.tsx";
 import Services from "./pages/Services.tsx";
 import Contact from "./pages/Contact.tsx";
 import GetStarted from "./pages/GetStarted.tsx";
+import About from "./pages/About.tsx";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/industries/:slug" element={<IndustryPage />} />
           <Route path="/use-cases/:slug" element={<UseCasePage />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<About />} />
           <Route path="/get-started" element={<GetStarted />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
