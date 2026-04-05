@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 
 interface OptimizedImageProps {
   src: string;
@@ -8,7 +8,7 @@ interface OptimizedImageProps {
   priority?: boolean;
 }
 
-export function OptimizedImage({ src, alt, className = '', style, priority = false }: OptimizedImageProps) {
+export const OptimizedImage = memo(function OptimizedImage({ src, alt, className = '', style, priority = false }: OptimizedImageProps) {
   const [loaded, setLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -23,12 +23,13 @@ export function OptimizedImage({ src, alt, className = '', style, priority = fal
       alt={alt}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
+      fetchPriority={priority ? 'high' : 'auto'}
       onLoad={() => setLoaded(true)}
-      className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
-      style={style}
+      className={`transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+      style={{ ...style, willChange: 'opacity' }}
     />
   );
-}
+});
 
 interface OptimizedVideoProps {
   src: string;
@@ -39,27 +40,30 @@ interface OptimizedVideoProps {
   onEnded?: () => void;
 }
 
-export function OptimizedVideo({ src, className = '', style, priority = false, loop = true, onEnded }: OptimizedVideoProps) {
+export const OptimizedVideo = memo(function OptimizedVideo({ src, className = '', style, priority = false, loop = true, onEnded }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    
+
     if (priority) {
       video.preload = 'auto';
+      video.play().catch(() => {});
     } else {
-      video.preload = 'metadata';
+      video.preload = 'none';
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
             video.preload = 'auto';
             video.play().catch(() => {});
             observer.disconnect();
+          } else {
+            video.pause();
           }
         },
-        { rootMargin: '200px' }
+        { rootMargin: '300px' }
       );
       observer.observe(video);
       return () => observer.disconnect();
@@ -69,16 +73,16 @@ export function OptimizedVideo({ src, className = '', style, priority = false, l
   return (
     <video
       ref={videoRef}
-      autoPlay
+      autoPlay={priority}
       muted
       loop={loop}
       playsInline
-      onCanPlay={() => setLoaded(true)}
+      onCanPlayThrough={() => setLoaded(true)}
       onEnded={onEnded}
-      className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
-      style={style}
+      className={`transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+      style={{ ...style, willChange: 'opacity' }}
     >
       <source src={src} type="video/mp4" />
     </video>
   );
-}
+});
