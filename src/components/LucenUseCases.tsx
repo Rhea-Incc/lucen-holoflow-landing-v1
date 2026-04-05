@@ -20,12 +20,12 @@ export default function LucenUseCases() {
     return () => clearInterval(timer);
   }, [isMobile, next]);
 
-  // Sync scroll position on mobile (without hijacking page scroll)
+  // Sync scroll position on mobile
   useEffect(() => {
     if (!isMobile || !scrollRef.current) return;
     const child = scrollRef.current.children[currentSlide] as HTMLElement;
     if (child) {
-      scrollRef.current.scrollTo({ left: child.offsetLeft - scrollRef.current.offsetLeft, behavior: 'smooth' });
+      child.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
     }
   }, [currentSlide, isMobile]);
 

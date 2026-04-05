@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizedImage, OptimizedVideo } from './OptimizedMedia';
 
@@ -14,22 +14,15 @@ export default function MediaGallery({ images, videos, title }: MediaGalleryProp
     ...images.map((src) => ({ type: 'image' as const, src })),
   ];
   const [current, setCurrent] = useState(0);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const next = useCallback(() => setCurrent((p) => (p + 1) % allMedia.length), [allMedia.length]);
   const prev = useCallback(() => setCurrent((p) => (p - 1 + allMedia.length) % allMedia.length), [allMedia.length]);
 
-  // For images, auto-advance after 6s. For videos, advance when video ends.
   useEffect(() => {
     if (allMedia.length <= 1) return;
-    const item = allMedia[current];
-    if (item.type === 'video') {
-      // Video: listen for ended event (handled via onEnded prop)
-      return;
-    }
-    const timer = setTimeout(next, 6000);
-    return () => clearTimeout(timer);
-  }, [next, allMedia.length, current, allMedia]);
+    const timer = setInterval(next, 6000);
+    return () => clearInterval(timer);
+  }, [next, allMedia.length]);
 
   if (allMedia.length === 0) return null;
 
@@ -48,7 +41,7 @@ export default function MediaGallery({ images, videos, title }: MediaGalleryProp
             className="absolute inset-0"
           >
             {item.type === 'video' ? (
-              <OptimizedVideo src={item.src} className="w-full h-full object-cover" priority loop={allMedia.length <= 1} onEnded={allMedia.length > 1 ? next : undefined} />
+              <OptimizedVideo src={item.src} className="w-full h-full object-cover" priority />
             ) : (
               <OptimizedImage src={item.src} alt={title} className="w-full h-full object-cover" priority />
             )}
