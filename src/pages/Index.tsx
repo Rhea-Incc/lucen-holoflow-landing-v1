@@ -12,6 +12,7 @@ import LucenNetwork from '@/components/LucenNetwork';
 import LucenBrain from '@/components/LucenBrain';
 import LucenPartners from '@/components/LucenPartners';
 import LucenClosing from '@/components/LucenClosing';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 const Index = () => {
   return (
