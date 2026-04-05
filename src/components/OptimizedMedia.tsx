@@ -35,6 +35,8 @@ interface OptimizedVideoProps {
   className?: string;
   style?: React.CSSProperties;
   priority?: boolean;
+  loop?: boolean;
+  onEnded?: () => void;
 }
 
 export function OptimizedVideo({ src, className = '', style, priority = false }: OptimizedVideoProps) {

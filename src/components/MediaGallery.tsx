@@ -48,7 +48,7 @@ export default function MediaGallery({ images, videos, title }: MediaGalleryProp
             className="absolute inset-0"
           >
             {item.type === 'video' ? (
-              <OptimizedVideo src={item.src} className="w-full h-full object-cover" priority />
+              <OptimizedVideo src={item.src} className="w-full h-full object-cover" priority loop={allMedia.length <= 1} onEnded={allMedia.length > 1 ? next : undefined} />
             ) : (
               <OptimizedImage src={item.src} alt={title} className="w-full h-full object-cover" priority />
             )}
