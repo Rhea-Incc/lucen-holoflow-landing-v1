@@ -1,4 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
+import { cdnUrl } from '@/lib/media';
+
+/** Resolve a media path: if it starts with /media/, use CDN; otherwise pass through */
+function resolveUrl(src: string): string {
+  if (src.startsWith('/media/')) return cdnUrl(src);
+  return src;
+}
 
 interface OptimizedImageProps {
   src: string;
@@ -9,6 +16,7 @@ interface OptimizedImageProps {
 }
 
 export function OptimizedImage({ src, alt, className = '', style, priority = false }: OptimizedImageProps) {
+  const resolvedSrc = resolveUrl(src);
   const [loaded, setLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -18,39 +26,36 @@ export function OptimizedImage({ src, alt, className = '', style, priority = fal
       return;
     }
 
-    // Preconnect + prefetch for priority images
     if (priority) {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'image';
-      link.href = src;
+      link.href = resolvedSrc;
       document.head.appendChild(link);
       return () => { document.head.removeChild(link); };
     }
 
-    // Lazy images: use IntersectionObserver with generous rootMargin
     const img = imgRef.current;
     if (!img) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          img.src = src;
+          img.src = resolvedSrc;
           observer.disconnect();
         }
       },
       { rootMargin: '500px' }
     );
-    // Set a placeholder initially for non-priority
     img.removeAttribute('src');
     observer.observe(img);
     return () => observer.disconnect();
-  }, [src, priority]);
+  }, [resolvedSrc, priority]);
 
   return (
     <img
       ref={imgRef}
-      src={priority ? src : undefined}
+      src={priority ? resolvedSrc : undefined}
       alt={alt}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
@@ -77,6 +82,10 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loaded, setLoaded] = useState(false);
 
+  const resolvedSrc = resolveUrl(src);
+  const resolvedSources = sources?.map(s => ({ ...s, src: resolveUrl(s.src) }));
+  const resolvedPoster = poster ? resolveUrl(poster) : undefined;
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -88,11 +97,10 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
     };
 
     if (priority) {
-      // Start loading immediately for hero videos
       video.preload = 'auto';
       playVideo();
     } else {
-      video.preload = 'metadata'; // Load metadata so poster/dimensions are ready
+      video.preload = 'metadata';
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
@@ -100,12 +108,12 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
             observer.disconnect();
           }
         },
-        { rootMargin: '600px' } // Start loading 600px before visible
+        { rootMargin: '600px' }
       );
       observer.observe(video);
       return () => observer.disconnect();
     }
-  }, [priority, src, sources]);
+  }, [priority, resolvedSrc, resolvedSources]);
 
   return (
     <video
@@ -114,18 +122,18 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
       muted
       loop={loop}
       playsInline
-      poster={poster}
+      poster={resolvedPoster}
       preload={priority ? 'auto' : 'metadata'}
       onCanPlay={() => setLoaded(true)}
       onEnded={onEnded}
       className={`transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
       style={style}
     >
-      {sources?.length
-        ? sources.map((source) => (
+      {resolvedSources?.length
+        ? resolvedSources.map((source) => (
             <source key={`${source.src}-${source.media ?? 'all'}`} src={source.src} media={source.media} type={source.type ?? 'video/mp4'} />
           ))
-        : <source src={src} type="video/mp4" />}
+        : <source src={resolvedSrc} type="video/mp4" />}
     </video>
   );
 }
