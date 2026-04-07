@@ -13,18 +13,50 @@ export function OptimizedImage({ src, alt, className = '', style, priority = fal
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (imgRef.current?.complete) setLoaded(true);
-  }, []);
+    if (imgRef.current?.complete) {
+      setLoaded(true);
+      return;
+    }
+
+    // Preconnect + prefetch for priority images
+    if (priority) {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = src;
+      document.head.appendChild(link);
+      return () => { document.head.removeChild(link); };
+    }
+
+    // Lazy images: use IntersectionObserver with generous rootMargin
+    const img = imgRef.current;
+    if (!img) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          img.src = src;
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '500px' }
+    );
+    // Set a placeholder initially for non-priority
+    img.removeAttribute('src');
+    observer.observe(img);
+    return () => observer.disconnect();
+  }, [src, priority]);
 
   return (
     <img
       ref={imgRef}
-      src={src}
+      src={priority ? src : undefined}
       alt={alt}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
+      fetchPriority={priority ? 'high' : 'auto'}
       onLoad={() => setLoaded(true)}
-      className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+      className={`transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
       style={style}
     />
   );
@@ -38,9 +70,10 @@ interface OptimizedVideoProps {
   priority?: boolean;
   loop?: boolean;
   onEnded?: () => void;
+  poster?: string;
 }
 
-export function OptimizedVideo({ src, sources, className = '', style, priority = false, loop = true, onEnded }: OptimizedVideoProps) {
+export function OptimizedVideo({ src, sources, className = '', style, priority = false, loop = true, onEnded, poster }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -48,24 +81,26 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
     const video = videoRef.current;
     if (!video) return;
 
-    const primeVideo = () => {
+    const playVideo = () => {
       video.preload = 'auto';
       video.load();
       video.play().catch(() => {});
     };
 
     if (priority) {
-      primeVideo();
+      // Start loading immediately for hero videos
+      video.preload = 'auto';
+      playVideo();
     } else {
-      video.preload = 'none';
+      video.preload = 'metadata'; // Load metadata so poster/dimensions are ready
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
-            primeVideo();
+            playVideo();
             observer.disconnect();
           }
         },
-        { rootMargin: '300px' }
+        { rootMargin: '600px' } // Start loading 600px before visible
       );
       observer.observe(video);
       return () => observer.disconnect();
@@ -79,10 +114,11 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
       muted
       loop={loop}
       playsInline
-      preload={priority ? 'auto' : 'none'}
-      onLoadedData={() => setLoaded(true)}
+      poster={poster}
+      preload={priority ? 'auto' : 'metadata'}
+      onCanPlay={() => setLoaded(true)}
       onEnded={onEnded}
-      className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+      className={`transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
       style={style}
     >
       {sources?.length

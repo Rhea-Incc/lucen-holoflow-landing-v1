@@ -14,6 +14,7 @@ import LucenBrain from '@/components/LucenBrain';
 import LucenPartners from '@/components/LucenPartners';
 import LucenClosing from '@/components/LucenClosing';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import ScrollSection from '@/components/ScrollSection';
 
 const Index = () => {
   return (
@@ -23,17 +24,50 @@ const Index = () => {
       <LucenHeader />
       <WhatsAppButton />
       <LucenHero />
-      <LucenDefinition />
-      <LucenOfferings />
-      <LucenPipeline />
-      <LucenIndustries />
-      <LucenUseCases />
-      <LucenMediaGallery />
-      <LucenBusinessModels />
-      <LucenNetwork />
-      <LucenBrain />
-      <LucenPartners />
-      <LucenClosing />
+
+      <ScrollSection y={100} delay={0}>
+        <LucenDefinition />
+      </ScrollSection>
+
+      <ScrollSection y={80} delay={0.05}>
+        <LucenOfferings />
+      </ScrollSection>
+
+      <ScrollSection y={90} delay={0}>
+        <LucenPipeline />
+      </ScrollSection>
+
+      <ScrollSection y={80} delay={0.05}>
+        <LucenIndustries />
+      </ScrollSection>
+
+      <ScrollSection y={70}>
+        <LucenUseCases />
+      </ScrollSection>
+
+      <ScrollSection y={60} scale={0.95}>
+        <LucenMediaGallery />
+      </ScrollSection>
+
+      <ScrollSection y={80}>
+        <LucenBusinessModels />
+      </ScrollSection>
+
+      <ScrollSection y={90}>
+        <LucenNetwork />
+      </ScrollSection>
+
+      <ScrollSection y={80} scale={0.97}>
+        <LucenBrain />
+      </ScrollSection>
+
+      <ScrollSection y={60}>
+        <LucenPartners />
+      </ScrollSection>
+
+      <ScrollSection y={100}>
+        <LucenClosing />
+      </ScrollSection>
 
       <footer className="relative py-16 px-6 text-center">
         <p className="text-muted-foreground text-xs font-display tracking-[0.2em] uppercase">
