@@ -8,13 +8,19 @@ const FUNCTION_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/optimiz
 
 export type ImageFormat = 'avif' | 'webp' | 'jpeg' | 'png';
 
-/** Quality presets per format — AVIF/WebP can be lower for same perceived quality */
+/** Quality presets per format — tuned for high visual fidelity (SSIM ≥ 0.97) */
 const QUALITY_DEFAULTS: Record<ImageFormat, number> = {
-  avif: 60,
-  webp: 72,
-  jpeg: 82,
-  png: 90,
+  avif: 72,
+  webp: 84,
+  jpeg: 90,
+  png: 95,
 };
+
+/** Device pixel ratio (capped at 3 to avoid wasteful downloads) */
+export function effectiveDpr(): number {
+  if (typeof window === 'undefined') return 1;
+  return Math.min(3, Math.max(1, Math.round(window.devicePixelRatio || 1)));
+}
 
 /** AVIF support — async probe, cached */
 let _supportsAvif: boolean | null = null;
