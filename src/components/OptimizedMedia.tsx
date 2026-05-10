@@ -104,15 +104,36 @@ export function OptimizedImage({
   );
 }
 
+interface VideoSource {
+  src: string;
+  media?: string;
+  type?: string;
+  /** Optional vertical resolution (e.g. 720) for ABR ladder selection. */
+  height?: number;
+  /** Optional bitrate in kbps for ABR ladder selection. */
+  bitrateKbps?: number;
+}
+
 interface OptimizedVideoProps {
   src: string;
-  sources?: Array<{ src: string; media?: string; type?: string }>;
+  /** Progressive sources or an ABR ladder. Pass a `.m3u8` (HLS) or `.mpd` (DASH) src for adaptive streaming. */
+  sources?: Array<VideoSource>;
   className?: string;
   style?: React.CSSProperties;
   priority?: boolean;
   loop?: boolean;
   onEnded?: () => void;
   poster?: string;
+}
+
+function isHls(url: string) { return /\.m3u8(\?|$)/i.test(url); }
+function isDash(url: string) { return /\.mpd(\?|$)/i.test(url); }
+
+/** Pick the best progressive rendition that fits the active network profile. */
+function pickRendition(sources: VideoSource[], maxHeight: number): VideoSource {
+  const ranked = [...sources].sort((a, b) => (a.height ?? 0) - (b.height ?? 0));
+  const fit = ranked.filter((s) => (s.height ?? Infinity) <= maxHeight);
+  return (fit[fit.length - 1] ?? ranked[0]);
 }
 
 export function OptimizedVideo({
@@ -132,11 +153,46 @@ export function OptimizedVideo({
     // Honor data-saver / reduced-motion → don't autoplay heavy video
     const reduced = typeof window !== 'undefined'
       && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } })
-      .connection;
-    const lowBandwidth = saveData?.saveData || /(^|-)2g$/.test(saveData?.effectiveType || '');
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string; downlink?: number } }).connection;
+    const saveData = conn?.saveData;
+    const lowBandwidth = saveData || /(^|-)2g$/.test(conn?.effectiveType || '');
 
-    const startLoad = () => {
+    // Lazy-import network profile so we keep tree-shaking friendly
+    let hlsInstance: { destroy: () => void } | null = null;
+
+    const startLoad = async () => {
+      const { networkProfile } = await import('@/lib/network');
+      const profile = networkProfile();
+      const adaptiveSrc = [resolvedSrc, ...(resolvedSources?.map((s) => s.src) ?? [])]
+        .find((u) => isHls(u) || isDash(u));
+
+      // 1. Adaptive bitrate (HLS/DASH) — highest fidelity at lowest sustainable bitrate
+      if (adaptiveSrc && isHls(adaptiveSrc)) {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = adaptiveSrc; // Safari native HLS
+        } else {
+          const Hls = (await import('hls.js')).default;
+          if (Hls.isSupported()) {
+            const hls = new Hls({
+              capLevelToPlayerSize: true,
+              maxMaxBufferLength: 30,
+              startLevel: -1, // auto
+              abrEwmaDefaultEstimate: (profile.downlinkMbps || 5) * 1_000_000,
+            });
+            hls.loadSource(adaptiveSrc);
+            hls.attachMedia(video);
+            hlsInstance = hls;
+          } else if (resolvedSources?.length) {
+            const pick = pickRendition(resolvedSources, profile.maxVideoHeight);
+            video.src = pick.src;
+          }
+        }
+      } else if (resolvedSources?.length && resolvedSources.some((s) => s.height)) {
+        // 2. ABR ladder of progressive MP4s — pick a rendition matching network
+        const pick = pickRendition(resolvedSources, profile.maxVideoHeight);
+        video.src = pick.src;
+      } // else: leave declarative <source> children as-is
+
       video.preload = 'auto';
       video.load();
       if (!reduced) video.play().catch(() => {});
@@ -144,19 +200,24 @@ export function OptimizedVideo({
 
     if (priority && !lowBandwidth) {
       startLoad();
-      return;
+      return () => { hlsInstance?.destroy(); };
     }
 
     video.preload = 'none';
-    if (lowBandwidth) return; // user opted into data savings
+    if (lowBandwidth) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) { startLoad(); observer.disconnect(); } },
       { rootMargin: '600px 0px' },
     );
     observer.observe(video);
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); hlsInstance?.destroy(); };
   }, [priority, resolvedSrc]);
+
+  // Skip declarative sources when caller provided an HLS/DASH or ABR ladder
+  // (we set `video.src` imperatively above to avoid double-loading).
+  const hasAdaptive = !!resolvedSources?.some((s) => isHls(s.src) || isDash(s.src) || s.height)
+    || isHls(resolvedSrc) || isDash(resolvedSrc);
 
   return (
     <video
@@ -172,7 +233,7 @@ export function OptimizedVideo({
       className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
       style={style}
     >
-      {resolvedSources?.length
+      {hasAdaptive ? null : resolvedSources?.length
         ? resolvedSources.map((source) => (
             <source key={`${source.src}-${source.media ?? 'all'}`} src={source.src} media={source.media} type={source.type ?? 'video/mp4'} />
           ))
@@ -180,3 +241,4 @@ export function OptimizedVideo({
     </video>
   );
 }
+
