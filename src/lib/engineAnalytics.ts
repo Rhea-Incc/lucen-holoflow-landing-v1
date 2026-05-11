@@ -36,7 +36,7 @@ export async function trackEngineEvent(evt: EngineEvent): Promise<void> {
     metadata: evt.metadata ?? null,
   };
   // Fire-and-forget; do not block UI.
-  void supabase.from('engine_events').insert(payload).then(({ error }) => {
+  void supabase.from('engine_events').insert([payload]).then(({ error }) => {
     if (error && import.meta.env.DEV) {
       // eslint-disable-next-line no-console
       console.warn('[engine] track failed', error.message);
