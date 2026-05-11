@@ -19,7 +19,7 @@ const offerings = [
     icon: '⬡',
   },
   {
-    title: 'Lucen Brain',
+    title: 'Lucen Engine',
     description: 'AI-powered analytics engine that captures footfall, dwell time, and converts interaction data into actionable intelligence.',
     video: '/media/2.mp4',
     icon: '◎',

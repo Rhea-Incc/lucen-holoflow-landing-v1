@@ -22,7 +22,7 @@ const chartColors = [
   'hsl(var(--accent) / 0.85)',
 ];
 
-export default function LucenBrain() {
+export default function LucenEngine() {
   return (
     <section className="relative py-32 px-6">
       <div className="max-w-6xl mx-auto">
@@ -35,7 +35,7 @@ export default function LucenBrain() {
         >
           <p className="text-sm font-display tracking-[0.3em] uppercase text-accent mb-4">Intelligence Layer</p>
           <h2 className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-foreground mb-6">
-            Lucen Brain
+            Lucen Engine
           </h2>
           <p className="text-muted-foreground font-body text-lg max-w-2xl mx-auto">
             Every interaction becomes measurable, optimizable, and monetizable.

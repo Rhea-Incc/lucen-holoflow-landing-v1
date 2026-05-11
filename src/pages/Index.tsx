@@ -10,7 +10,7 @@ import LucenUseCases from '@/components/LucenUseCases';
 import LucenMediaGallery from '@/components/LucenMediaGallery';
 import LucenBusinessModels from '@/components/LucenBusinessModels';
 import LucenNetwork from '@/components/LucenNetwork';
-import LucenBrain from '@/components/LucenBrain';
+import LucenEngine from '@/components/LucenEngine';
 import LucenPartners from '@/components/LucenPartners';
 import LucenClosing from '@/components/LucenClosing';
 import WhatsAppButton from '@/components/WhatsAppButton';
@@ -58,7 +58,7 @@ const Index = () => {
       </ScrollSection>
 
       <ScrollSection y={80} scale={0.97}>
-        <LucenBrain />
+        <LucenEngine />
       </ScrollSection>
 
       <ScrollSection y={60}>

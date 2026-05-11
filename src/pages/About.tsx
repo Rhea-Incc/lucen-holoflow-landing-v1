@@ -10,7 +10,7 @@ const values = [
   { icon: Lightbulb, title: 'Innovation First', text: 'We pioneer holographic and immersive media experiences that redefine how brands communicate in physical spaces.' },
   { icon: Eye, title: 'Audience-Centric', text: 'Every deployment is designed around real human behavior — capturing attention naturally and driving measurable engagement.' },
   { icon: Target, title: 'Precision Delivery', text: 'From venue mapping to content scheduling, our AI-driven pipeline ensures the right message reaches the right audience at the right moment.' },
-  { icon: Zap, title: 'Measurable Impact', text: 'Our Lucen Brain analytics engine tracks impressions, dwell time, and ROI in real-time — making every campaign accountable.' },
+  { icon: Zap, title: 'Measurable Impact', text: 'Our Lucen Engine analytics engine tracks impressions, dwell time, and ROI in real-time — making every campaign accountable.' },
 ];
 
 const fadeUp = {

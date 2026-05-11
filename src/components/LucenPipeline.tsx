@@ -4,7 +4,7 @@ const pipelineNodes = [
   { label: 'Attention', detail: 'Holographic systems stop people instantly', icon: '◉' },
   { label: 'Interaction', detail: 'QR, NFC, gesture engagement', icon: '◎' },
   { label: 'Capture', detail: 'Cameras + sensors track behavior', icon: '◇' },
-  { label: 'Analysis', detail: 'Lucen Brain processes patterns', icon: '⬡' },
+  { label: 'Analysis', detail: 'Lucen Engine processes patterns', icon: '⬡' },
   { label: 'Retargeting', detail: 'Users are re-engaged digitally', icon: '◈' },
   { label: 'Conversion', detail: 'Interaction becomes measurable revenue', icon: '◆' },
 ];
