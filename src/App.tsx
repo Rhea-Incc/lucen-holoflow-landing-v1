@@ -13,6 +13,7 @@ import Contact from "./pages/Contact.tsx";
 import About from "./pages/About.tsx";
 import GetStarted from "./pages/GetStarted.tsx";
 import Admin from "./pages/Admin.tsx";
+import IntegrationPage from "./pages/IntegrationPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/get-started" element={<GetStarted />} />
+          <Route path="/integrations/:slug" element={<IntegrationPage />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

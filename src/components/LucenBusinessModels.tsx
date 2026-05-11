@@ -1,55 +1,17 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Boxes, CalendarRange, CalendarClock, LineChart, Megaphone, Sparkles } from 'lucide-react';
-
-const integrations = [
-  {
-    icon: Boxes,
-    title: 'Hardware Purchase',
-    desc: 'Own the full Lucen holographic stack — displays, controllers, and the Lucen Engine analytics suite — deployed and calibrated for your space.',
-    cta: 'Request a quote',
-  },
-  {
-    icon: CalendarRange,
-    title: 'Long-Term Rentals',
-    desc: 'Scale into holographic retail without the capex. Multi-month and multi-year deployment plans with maintenance, content updates, and analytics included.',
-    cta: 'Plan a rollout',
-  },
-  {
-    icon: CalendarClock,
-    title: 'Short-Term Rentals',
-    desc: 'Plug-and-play holographic units for launches, pop-ups, and seasonal moments. Delivered, installed, and supported on event timelines.',
-    cta: 'Book a unit',
-  },
-  {
-    icon: LineChart,
-    title: 'Lucen Engine for DOOH',
-    desc: 'Subscribe the Lucen Engine analytics layer onto your existing DOOH network — footfall, dwell time, attention, and conversion intelligence on screens you already operate.',
-    cta: 'Connect a network',
-  },
-  {
-    icon: Megaphone,
-    title: 'Campaign Deployments',
-    desc: 'Turnkey holographic campaigns across the Lucen network — creative, media planning, deployment, and live performance reporting in one engagement.',
-    cta: 'Launch a campaign',
-  },
-  {
-    icon: Sparkles,
-    title: 'Product Activations',
-    desc: 'Premium product reveal experiences engineered around your brand — bespoke holographic content, choreography, and on-site capture.',
-    cta: 'Activate a product',
-  },
-];
+import { integrations } from '@/data/integrations';
+import { trackEngineEvent } from '@/lib/engineAnalytics';
+import { motionFor, useMotionPreset } from '@/lib/motionPreset';
 
 export default function LucenBusinessModels() {
+  const preset = useMotionPreset();
+
   return (
-    <section className="relative py-24 sm:py-32 px-4 sm:px-6">
+    <section id="integrations" className="relative py-24 sm:py-32 px-4 sm:px-6 scroll-mt-24">
       <div className="max-w-6xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          {...motionFor(preset, { y: 20, duration: 0.7 })}
           className="text-center mb-12 sm:mb-16"
         >
           <p className="text-xs sm:text-sm font-display tracking-[0.3em] uppercase text-primary mb-3 sm:mb-4">
@@ -67,14 +29,26 @@ export default function LucenBusinessModels() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {integrations.map((item, i) => {
             const Icon = item.icon;
+            const onClick = () =>
+              trackEngineEvent({
+                event_type: 'cta_click',
+                integration_slug: item.slug,
+                source: 'business_models_grid',
+                metadata: { position: i, label: item.cta },
+              });
+
+            const cardMotion = motionFor(preset, {
+              y: 24,
+              blur: 8,
+              duration: 0.55,
+              delay: i * 0.05,
+            });
+
             return (
               <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
-                whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.55, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
-                whileHover={{ y: -4 }}
+                key={item.slug}
+                {...cardMotion}
+                whileHover={preset.lite ? undefined : { y: -4 }}
                 className="glass-panel-elevated glow-edge p-6 sm:p-7 flex flex-col h-full group"
               >
                 <div className="flex items-center gap-3 mb-4">
@@ -89,29 +63,50 @@ export default function LucenBusinessModels() {
                   {item.title}
                 </h3>
                 <p className="font-body text-sm text-muted-foreground leading-relaxed mb-5 flex-1">
-                  {item.desc}
+                  {item.shortDesc}
                 </p>
-                <Link
-                  to="/get-started"
-                  className="font-display text-xs tracking-[0.2em] uppercase text-primary/90 hover:text-primary transition-colors inline-flex items-center gap-2"
-                >
-                  {item.cta}
-                  <span aria-hidden="true">→</span>
-                </Link>
+                <div className="flex items-center justify-between gap-3">
+                  <Link
+                    to={`/integrations/${item.slug}`}
+                    onClick={onClick}
+                    className="font-display text-xs tracking-[0.2em] uppercase text-primary/90 hover:text-primary transition-colors inline-flex items-center gap-2"
+                  >
+                    Learn more
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                  <Link
+                    to={`/get-started?integration=${item.slug}`}
+                    onClick={() =>
+                      trackEngineEvent({
+                        event_type: 'cta_click',
+                        integration_slug: item.slug,
+                        source: 'business_models_grid_cta',
+                        metadata: { label: item.cta },
+                      })
+                    }
+                    className="font-display text-[11px] tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {item.cta}
+                  </Link>
+                </div>
               </motion.div>
             );
           })}
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          {...motionFor(preset, { y: 16, duration: 0.6, delay: 0.15 })}
           className="mt-10 sm:mt-14 text-center"
         >
           <Link
             to="/contact"
+            onClick={() =>
+              trackEngineEvent({
+                event_type: 'cta_click',
+                source: 'business_models_footer',
+                metadata: { label: 'talk_to_lucen' },
+              })
+            }
             className="glass-panel-elevated glow-edge inline-block px-7 py-3 font-display text-sm tracking-[0.2em] uppercase text-primary hover:text-foreground transition-colors"
           >
             Talk to Lucen
