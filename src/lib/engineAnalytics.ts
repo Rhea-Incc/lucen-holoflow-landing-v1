@@ -33,10 +33,10 @@ export async function trackEngineEvent(evt: EngineEvent): Promise<void> {
     referrer: document.referrer || null,
     user_agent: navigator.userAgent,
     session_id: getSessionId(),
-    metadata: evt.metadata ?? null,
+    metadata: (evt.metadata ?? null) as never,
   };
   // Fire-and-forget; do not block UI.
-  void supabase.from('engine_events').insert([payload]).then(({ error }) => {
+  void supabase.from('engine_events').insert(payload).then(({ error }) => {
     if (error && import.meta.env.DEV) {
       // eslint-disable-next-line no-console
       console.warn('[engine] track failed', error.message);
