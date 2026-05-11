@@ -7,6 +7,7 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import { Phone, MessageCircle, PhoneCall, Loader2, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { trackEngineEvent } from '@/lib/engineAnalytics';
 
 export default function Contact() {
   const [mode, setMode] = useState<'message' | 'call' | 'callback'>('message');
@@ -44,6 +45,13 @@ export default function Contact() {
 
     setSubmitted(true);
     toast.success('Message sent successfully!');
+    const integrationSlug = new URLSearchParams(window.location.search).get('integration');
+    void trackEngineEvent({
+      event_type: 'conversion',
+      integration_slug: integrationSlug,
+      source: 'contact_form',
+      metadata: { mode },
+    });
     setName(''); setEmail(''); setPhone(''); setMessage(''); setPreferredTime('');
     setTimeout(() => setSubmitted(false), 4000);
   };
