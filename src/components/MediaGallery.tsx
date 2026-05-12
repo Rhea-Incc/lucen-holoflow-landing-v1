@@ -37,7 +37,15 @@ export default function MediaGallery({ images, videos, title }: MediaGalleryProp
 
   return (
     <div className="relative w-full overflow-hidden rounded-lg bg-black/60">
-      <div className="relative aspect-video md:aspect-[16/9] w-full">
+      {/*
+        Per-breakpoint aspect ratios keep immersive displays oriented correctly:
+          mobile  → 4/3  (taller, avoids letterbox bars on portrait viewports)
+          tablet  → 3/2  (balanced cinematic crop)
+          desktop → 16/9 (full immersive widescreen)
+        `object-contain` + a max-scale cap on the inner <img>/<video> guarantees
+        we never upscale past the source resolution (sharpness-safe threshold).
+      */}
+      <div className="relative w-full aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/9] xl:aspect-[16/9] 2xl:aspect-[21/9]">
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
@@ -48,9 +56,21 @@ export default function MediaGallery({ images, videos, title }: MediaGalleryProp
             className="absolute inset-0 flex items-center justify-center"
           >
             {item.type === 'video' ? (
-              <OptimizedVideo src={item.src} className="w-full h-full object-contain" priority loop={allMedia.length <= 1} onEnded={allMedia.length > 1 ? next : undefined} />
+              <OptimizedVideo
+                src={item.src}
+                className="max-w-full max-h-full w-auto h-auto object-contain"
+                style={{ maxWidth: '100%', maxHeight: '100%' }}
+                priority
+                loop={allMedia.length <= 1}
+                onEnded={allMedia.length > 1 ? next : undefined}
+              />
             ) : (
-              <OptimizedImage src={item.src} alt={title} className="w-full h-full [&_img]:object-contain" priority />
+              <OptimizedImage
+                src={item.src}
+                alt={title}
+                className="max-w-full max-h-full w-auto h-auto [&_img]:object-contain [&_img]:max-w-full [&_img]:max-h-full [&_img]:w-auto [&_img]:h-auto"
+                priority
+              />
             )}
           </motion.div>
         </AnimatePresence>
