@@ -60,11 +60,11 @@ export default function LucenUseCases() {
                   to={`/use-cases/${c.slug}`}
                   className="snap-start flex-shrink-0 w-[85vw] glass-panel-elevated glow-edge overflow-hidden group block"
                 >
-                  <div className="relative" style={{ height: '80vh' }}>
+                  <div className="relative bg-black/40" style={{ height: '80vh' }}>
                     <OptimizedImage
                       src={c.image}
                       alt={c.title}
-                      className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-700"
+                      className={`w-full h-full ${c.imageFit === 'contain' ? '[&_img]:object-contain' : 'object-cover'} opacity-70 group-hover:opacity-90 transition-opacity duration-700`}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-6">
