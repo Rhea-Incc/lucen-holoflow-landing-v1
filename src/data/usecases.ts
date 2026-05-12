@@ -28,6 +28,7 @@ export const useCases: UseCase[] = [
     videos: ['/media/real-estate-vid.mp4', '/media/4.mp4'],
     description: 'Convert sales centers into immersive visualization experiences where buyers walk through unbuilt properties and explore entire developments.',
     highlights: ['3D property walkthroughs', 'Interactive floor plans', 'Neighborhood visualization', 'Buyer engagement tracking'],
+    imageFit: 'contain',
   },
   {
     slug: 'automotive-showroom',
