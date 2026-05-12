@@ -122,11 +122,11 @@ export default function LucenUseCases() {
                     to={`/use-cases/${c.slug}`}
                     className={`glass-panel-elevated glow-edge overflow-hidden group block ${isReversed ? 'lg:order-2' : ''}`}
                   >
-                    <div className="relative aspect-[16/10] overflow-hidden">
+                    <div className="relative aspect-[16/10] overflow-hidden bg-black/40">
                       <OptimizedImage
                         src={c.image}
                         alt={c.title}
-                        className="w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700"
+                        className={`w-full h-full ${c.imageFit === 'contain' ? '[&_img]:object-contain' : 'object-cover group-hover:scale-105'} opacity-60 group-hover:opacity-90 transition-all duration-700`}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
                     </div>
