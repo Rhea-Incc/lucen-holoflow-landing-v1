@@ -6,6 +6,8 @@ export interface UseCase {
   videos: string[];
   description: string;
   highlights: string[];
+  /** How the homepage hero image should fit. Defaults to 'cover'. Use 'contain' when the source must be shown in full. */
+  imageFit?: 'cover' | 'contain';
 }
 
 export const useCases: UseCase[] = [
